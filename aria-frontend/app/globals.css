@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --bg-0: #060913;
+  --bg-1: #0d1224;
+  --bg-2: #121b35;
+  --ink: #f8fbff;
+  --muted: #9cb0d7;
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-plex-mono);
+}
+
+@theme inline {
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-plex-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--font-sans), sans-serif;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(34, 211, 238, 0.2), transparent 34%),
+    radial-gradient(circle at 84% 18%, rgba(59, 130, 246, 0.22), transparent 38%),
+    radial-gradient(circle at 50% 120%, rgba(16, 185, 129, 0.14), transparent 42%),
+    linear-gradient(140deg, var(--bg-0), var(--bg-1) 42%, var(--bg-2));
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+}
+
+.copilotKitChat {
+  border: 0;
+  background: transparent;
+}
+
+.copilotKitMessages {
+  background: transparent;
+}
+
+.copilotKitInput {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
