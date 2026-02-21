@@ -1,13 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --bg-0: #060913;
-  --bg-1: #0d1224;
-  --bg-2: #121b35;
-  --ink: #f8fbff;
-  --muted: #9cb0d7;
+  --bg-0: #020202;
+  --bg-1: #06090f;
+  --bg-2: #0b1018;
+  --surface-0: rgba(12, 16, 26, 0.82);
+  --surface-1: rgba(19, 24, 36, 0.78);
+  --line-0: rgba(122, 142, 172, 0.28);
+  --line-1: rgba(148, 169, 198, 0.16);
+  --ink: #f6f8fc;
+  --muted: #95a2ba;
+  --accent-cyan: #6ad9ff;
+  --accent-blue: #6f8dff;
+  --accent-emerald: #45d7af;
+  --accent-rose: #ff7070;
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-plex-mono);
+
+  /* Force CopilotKit palette to dark mode for embedded chat */
+  --copilot-kit-primary-color: #6ad9ff;
+  --copilot-kit-contrast-color: #02040a;
+  --copilot-kit-background-color: #070b13;
+  --copilot-kit-input-background-color: #1a2231;
+  --copilot-kit-secondary-color: #0f1624;
+  --copilot-kit-secondary-contrast-color: #e6edff;
+  --copilot-kit-separator-color: rgba(126, 150, 188, 0.32);
+  --copilot-kit-muted-color: rgba(148, 169, 198, 0.6);
 }
 
 @theme inline {
@@ -30,10 +48,108 @@ body {
   color: var(--ink);
   font-family: var(--font-sans), sans-serif;
   background:
-    radial-gradient(circle at 12% 12%, rgba(34, 211, 238, 0.2), transparent 34%),
-    radial-gradient(circle at 84% 18%, rgba(59, 130, 246, 0.22), transparent 38%),
-    radial-gradient(circle at 50% 120%, rgba(16, 185, 129, 0.14), transparent 42%),
-    linear-gradient(140deg, var(--bg-0), var(--bg-1) 42%, var(--bg-2));
+    radial-gradient(circle at 14% 12%, rgba(106, 217, 255, 0.16), transparent 36%),
+    radial-gradient(circle at 88% 7%, rgba(111, 141, 255, 0.14), transparent 30%),
+    radial-gradient(circle at 50% 108%, rgba(69, 215, 175, 0.1), transparent 36%),
+    linear-gradient(155deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+      to right,
+      rgba(158, 184, 214, 0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(158, 184, 214, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at 50% 22%, black 20%, transparent 78%);
+  opacity: 0.36;
+}
+
+.panel {
+  border: 1px solid var(--line-0);
+  background: linear-gradient(165deg, var(--surface-0), var(--surface-1));
+  box-shadow:
+    0 30px 80px -46px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+}
+
+.panel-soft {
+  border: 1px solid var(--line-1);
+  background: linear-gradient(175deg, rgba(18, 23, 35, 0.72), rgba(10, 13, 22, 0.86));
+}
+
+.glow-cyan {
+  box-shadow:
+    0 0 0 1px rgba(106, 217, 255, 0.22),
+    0 18px 44px -24px rgba(106, 217, 255, 0.45);
+}
+
+.field-input {
+  border: 1px solid rgba(148, 169, 198, 0.24);
+  background: rgba(8, 11, 18, 0.84);
+  color: var(--ink);
+}
+
+.field-input:focus {
+  border-color: rgba(106, 217, 255, 0.8);
+  box-shadow: 0 0 0 3px rgba(106, 217, 255, 0.18);
+  outline: none;
+}
+
+.field-file {
+  border: 1px dashed rgba(148, 169, 198, 0.32);
+  background: rgba(8, 11, 18, 0.7);
+}
+
+.btn-primary {
+  background-image: linear-gradient(105deg, #6ad9ff, #6f8dff 55%, #45d7af);
+  color: #02040a;
+  box-shadow: 0 16px 42px -20px rgba(106, 217, 255, 0.55);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-primary:disabled {
+  filter: grayscale(18%);
+}
+
+.status-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: var(--accent-emerald);
+  box-shadow: 0 0 0 0 rgba(69, 215, 175, 0.45);
+  animation: pulse-dot 1.7s ease-out infinite;
+}
+
+.animate-rise {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: rise 520ms cubic-bezier(0.16, 0.76, 0.27, 1) forwards;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-dot {
+  70% {
+    box-shadow: 0 0 0 9px rgba(69, 215, 175, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(69, 215, 175, 0);
+  }
 }
 
 input,
@@ -44,13 +160,108 @@ button {
 
 .copilotKitChat {
   border: 0;
-  background: transparent;
+  background: transparent !important;
+  color: var(--copilot-kit-secondary-contrast-color);
 }
 
 .copilotKitMessages {
-  background: transparent;
+  background: rgba(5, 7, 13, 0.84) !important;
+  padding: 8px 0 0 !important;
 }
 
 .copilotKitInput {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(148, 169, 198, 0.24);
+  background: rgba(8, 11, 18, 0.96) !important;
+  border-radius: 20px !important;
+  width: calc(100% - 16px) !important;
+  min-height: 66px !important;
+}
+
+.copilotKitInputContainer {
+  background: linear-gradient(to top, rgba(8, 11, 18, 0.98), rgba(8, 11, 18, 0.9)) !important;
+  border-top: 1px solid rgba(122, 142, 172, 0.2);
+  padding-bottom: 6px !important;
+}
+
+.copilotKitMessagesFooter {
+  background: transparent !important;
+}
+
+.copilotKitMessagesContainer {
+  padding: 14px 16px !important;
+}
+
+.copilotKitMessage {
+  max-width: 88% !important;
+  border-radius: 14px !important;
+  margin-bottom: 10px !important;
+  line-height: 1.58 !important;
+}
+
+.copilotKitMessage.copilotKitAssistantMessage {
+  background: linear-gradient(165deg, rgba(19, 27, 42, 0.94), rgba(12, 18, 29, 0.94)) !important;
+  border: 1px solid rgba(122, 142, 172, 0.24);
+  padding: 12px 14px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.copilotKitMessage.copilotKitUserMessage {
+  background: linear-gradient(120deg, rgba(106, 217, 255, 0.24), rgba(111, 141, 255, 0.25)) !important;
+  border: 1px solid rgba(106, 217, 255, 0.35);
+  color: #eef7ff !important;
+  padding: 11px 14px !important;
+}
+
+.copilotKitMessage .copilotKitMarkdownElement {
+  color: #e6edff !important;
+}
+
+.copilotKitMessage .copilotKitMarkdownElement strong {
+  color: #ffffff !important;
+}
+
+.copilotKitInput > textarea {
+  color: #e9efff !important;
+  font-size: 15px !important;
+}
+
+.copilotKitInput > textarea::placeholder {
+  color: rgba(188, 202, 224, 0.55) !important;
+}
+
+.copilotKitInputControlButton {
+  color: rgba(160, 188, 226, 0.75) !important;
+}
+
+.copilotKitInputControlButton:not([disabled]):hover {
+  color: #dff4ff !important;
+}
+
+.poweredBy,
+.copilotKitInputContainer .poweredBy {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.poweredByContainer {
+  padding-bottom: 8px !important;
+}
+
+.aria-copilot-chat {
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(106, 217, 255, 0.08), transparent 30%),
+    radial-gradient(circle at 100% 100%, rgba(111, 141, 255, 0.08), transparent 35%),
+    rgba(5, 7, 13, 0.86) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot,
+  .animate-rise {
+    animation: none;
+  }
 }

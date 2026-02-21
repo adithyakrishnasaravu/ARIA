@@ -15,6 +15,15 @@ Standalone backend for ARIA multi-agent incident investigation.
 - Runbooks are hardcoded in code (no MongoDB setup required)
 - CopilotKit chat uses Bedrock adapter (requires AWS credentials for responses)
 
+## API protection
+
+- Protected endpoints: `POST /incidents/investigate`, all `/copilotkit/*`
+- Configure API keys with `ARIA_API_KEYS` (comma-separated)
+- Send key via `x-aria-api-key` or `Authorization: Bearer <key>`
+- Built-in per-IP rate limiting:
+  - `ARIA_RATE_LIMIT_WINDOW_MS` (default `60000`)
+  - `ARIA_RATE_LIMIT_MAX_REQUESTS` (default `30`)
+
 ## Neo4j Demo Graph
 
 Seed the 10-node dependency graph:
