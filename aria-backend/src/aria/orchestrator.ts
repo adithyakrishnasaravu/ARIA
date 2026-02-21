@@ -78,7 +78,7 @@ export class AriaOrchestrator {
         "investigation",
         "completed",
         "Investigation complete",
-        `Collected ${investigation.datadog.topErrors.length} high-signal log entries from Datadog.`,
+        `Collected ${investigation.datadog.topErrors.reduce((sum, e) => sum + (e.count ?? 1), 0)} high-signal log events across ${investigation.datadog.topErrors.length} error patterns from Datadog.`,
         {
           datadogMode: investigation.datadog.connectorMode,
           minimaxMode: investigation.minimax?.connectorMode ?? "skipped",

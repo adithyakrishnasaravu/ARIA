@@ -348,10 +348,24 @@ export function AriaConsole() {
             style={{ animationDelay: "110ms" }}
           >
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold text-white">Incident Input</h2>
-              <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.13em] text-cyan-100">
-                Live Stream
-              </span>
+              <div>
+                <h2 className="text-xl font-semibold text-white">Incident Input</h2>
+                <p className="mt-0.5 text-xs text-slate-400">
+                  Pre-loaded with demo scenario · in production, auto-populated from Datadog / PagerDuty webhooks
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setForm(defaultForm)}
+                  className="rounded-xl border border-slate-400/20 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-300 hover:bg-white/10 transition-colors"
+                >
+                  Load Demo Alert
+                </button>
+                <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.13em] text-cyan-100">
+                  Live Stream
+                </span>
+              </div>
             </div>
 
             <form onSubmit={onSubmit} className="mt-5 grid gap-4 md:grid-cols-2">

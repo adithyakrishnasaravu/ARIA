@@ -20,6 +20,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import certifi
 from pymongo import MongoClient
 
 MONGODB_URI = os.getenv("MONGODB_URI")
@@ -105,7 +106,7 @@ RUNBOOKS = [
 
 
 def seed() -> None:
-    client = MongoClient(MONGODB_URI)
+    client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
     try:
         db = client["aria"]
         col = db["runbooks"]
