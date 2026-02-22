@@ -5,6 +5,10 @@ import { DatadogConnector } from "../connectors/datadog";
 import { lookupService } from "../service-registry";
 import { AlertPayload, InvestigationResult, LikelyCause, Severity, TriageResult } from "../types";
 
+// ── Triage model — always Claude Sonnet 4.6 ──────────────────────────────────
+
+const TRIAGE_MODEL_ID = "us.anthropic.claude-sonnet-4-6";
+
 // ── Shared Bedrock client ─────────────────────────────────────────────────────
 
 let cachedClient: BedrockRuntimeClient | null = null;
@@ -119,7 +123,7 @@ function ruleFallback(alert: AlertPayload): TriageResult {
 
 async function callBedrock(systemPrompt: string, userMessage: string): Promise<string> {
   const command = new InvokeModelCommand({
-    modelId: ariaConfig.bedrock.modelId,
+    modelId: TRIAGE_MODEL_ID,
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({

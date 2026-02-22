@@ -140,6 +140,24 @@ export class RCAAgent {
     const fallback = mockRcaResult(alert.service);
     const hypotheses = buildFallbackHypotheses(alert, investigation, runbooks);
 
+    const topError = investigation.datadog.topErrors[0];
+    const topHypothesis = hypotheses[0];
+    const narrative = [
+      `Primary signal: ${topError?.errorKind ?? topHypothesis?.title ?? "elevated errors"} in ${alert.service}.`,
+      topError ? `Highest-frequency error: ${topError.message.slice(0, 120)}.` : null,
+      investigation.datadog.metricTrend
+        ? `Error rate trend is ${investigation.datadog.metricTrend} over the investigation window.`
+        : null,
+      graph.impactedServices.length > 0
+        ? `Blast radius covers ${graph.impactedServices.length} downstream service${graph.impactedServices.length > 1 ? "s" : ""}: ${graph.impactedServices.slice(0, 3).join(", ")}.`
+        : null,
+      topHypothesis?.remediation[0]
+        ? `Immediate action: ${topHypothesis.remediation[0]}`
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     return {
       ...fallback,
       hypotheses,
@@ -149,8 +167,7 @@ export class RCAAgent {
       runbooks: runbooks.length ? runbooks : fallback.runbooks,
       recommendedPlan: pickRecommendedPlan(hypotheses, runbooks),
       confidence: hypotheses[0]?.probability ?? fallback.confidence,
-      narrative:
-        "Primary signal points to datastore saturation causing queue wait amplification across payment critical path.",
+      narrative,
     };
   }
 }
