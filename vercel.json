@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd aria-frontend && npm install && npm run build",
-  "outputDirectory": "aria-frontend/.next",
-  "framework": "nextjs",
-  "installCommand": "echo 'install handled in buildCommand'"
-}
