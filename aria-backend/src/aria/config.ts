@@ -10,7 +10,7 @@ export const ariaConfig = {
   bedrock: {
     region: process.env.AWS_REGION ?? process.env.BEDROCK_REGION ?? "us-east-1",
     modelId:
-      process.env.BEDROCK_MODEL_ID ?? "anthropic.claude-3-5-sonnet-20240620-v1:0",
+      process.env.BEDROCK_MODEL_ID ?? "us.anthropic.claude-sonnet-4-6",
   },
   neo4j: {
     uri: process.env.NEO4J_URI,
@@ -18,9 +18,15 @@ export const ariaConfig = {
     password: process.env.NEO4J_PASSWORD,
     database: process.env.NEO4J_DATABASE ?? "neo4j",
   },
+  mongodb: {
+    uri: process.env.MONGODB_URI,
+    database: process.env.MONGODB_DATABASE ?? "aria",
+  },
 };
 
-export function isConnectorLive(connector: "datadog" | "bedrock" | "neo4j"): boolean {
+export function isConnectorLive(
+  connector: "datadog" | "bedrock" | "neo4j" | "mongodb",
+): boolean {
   if (ariaConfig.mode !== "live") {
     return false;
   }
@@ -38,5 +44,10 @@ export function isConnectorLive(connector: "datadog" | "bedrock" | "neo4j"): boo
       ariaConfig.neo4j.uri && ariaConfig.neo4j.username && ariaConfig.neo4j.password,
     );
   }
+
+  if (connector === "mongodb") {
+    return Boolean(ariaConfig.mongodb.uri);
+  }
+
   return false;
 }

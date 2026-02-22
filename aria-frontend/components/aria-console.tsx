@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 
-import { InvestigationReport, StreamEvent, TimelineStep } from "@/lib/types";
+import { InvestigationReport, StreamEvent, TimelineStep, TriageResult } from "@/lib/types";
 
 type FormState = {
   incidentId: string;
@@ -15,12 +15,12 @@ type FormState = {
 };
 
 const defaultForm: FormState = {
-  incidentId: "inc-2026-02-20-payment-latency",
-  service: "payment-svc",
-  summary: "Payment service p99 latency at 4.2s and error rate at 12%",
-  p99LatencyMs: 4200,
-  errorRatePct: 12,
-  startedAt: new Date(Date.now() - 8 * 60_000).toISOString(),
+  incidentId: "inc-2026-02-21-webstore-cart-errors",
+  service: "web-store",
+  summary: "web-store shopping cart AddressError causing elevated checkout failures and latency spike",
+  p99LatencyMs: 3800,
+  errorRatePct: 11,
+  startedAt: new Date(Date.now() - 12 * 60_000).toISOString(),
 };
 
 function toIsoLocal(value: string): string {
@@ -220,6 +220,7 @@ export function AriaConsole() {
   const [report, setReport] = useState<InvestigationReport | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingConfirmation, setPendingConfirmation] = useState<TriageResult | null>(null);
 
   const topHypothesis = report?.rca.hypotheses[0] ?? null;
 
@@ -236,6 +237,7 @@ export function AriaConsole() {
     setSteps([]);
     setReport(null);
     setError(null);
+    setPendingConfirmation(null);
 
     try {
       const response = await fetch(investigateEndpoint, {
@@ -279,9 +281,14 @@ export function AriaConsole() {
             setSteps((current) => [...current, eventPayload.step]);
           }
 
+          if (eventPayload.type === "confirmation_required") {
+            setPendingConfirmation(eventPayload.triage);
+          }
+
           if (eventPayload.type === "report") {
             await new Promise((r) => setTimeout(r, 1000));
             setReport(eventPayload.report);
+            setPendingConfirmation(null);
           }
 
           if (eventPayload.type === "error") {
@@ -327,7 +334,7 @@ export function AriaConsole() {
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <div className="panel-soft rounded-2xl p-3.5">
               <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Workflow</p>
-              <p className="mt-1 text-lg font-semibold text-slate-100">{completedSteps}/3 stages complete</p>
+              <p className="mt-1 text-lg font-semibold text-slate-100">{completedSteps} stages complete</p>
             </div>
             <div className="panel-soft rounded-2xl p-3.5">
               <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">Confidence</p>
@@ -472,6 +479,29 @@ export function AriaConsole() {
               <p className="mt-4 rounded-xl border border-rose-300/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
                 {error}
               </p>
+            ) : null}
+
+            {pendingConfirmation ? (
+              <div className="mt-6 rounded-2xl border border-rose-300/40 bg-rose-500/12 p-4">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-rose-400 animate-pulse" />
+                  <p className="text-sm font-semibold text-rose-200">
+                    SEV1 — Human Confirmation Required Before Remediation
+                  </p>
+                </div>
+                <p className="mt-2 text-xs text-rose-100/80 leading-5">
+                  {pendingConfirmation.urgencyReason}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3 text-xs text-rose-100/70">
+                  <span>Cause: <strong className="text-rose-200">{pendingConfirmation.likelyCause.replace("_", " ")}</strong></span>
+                  <span>Confidence: <strong className="text-rose-200">{(pendingConfirmation.confidence * 100).toFixed(0)}%</strong></span>
+                  <span>Window: <strong className="text-rose-200">{pendingConfirmation.investigationWindowMinutes}m</strong></span>
+                </div>
+                {pendingConfirmation.dataQualityWarning ? (
+                  <p className="mt-2 text-xs text-amber-300/80">⚠ {pendingConfirmation.dataQualityWarning}</p>
+                ) : null}
+                <p className="mt-3 text-xs text-slate-400">RCA and remediation plan are being generated. Review before executing any actions.</p>
+              </div>
             ) : null}
 
             <div className="mt-6">

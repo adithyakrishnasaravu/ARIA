@@ -1,0 +1,86 @@
+{
+  "payment-svc": {
+    "tier": "T1",
+    "sla": "99.99%",
+    "revenueImpactPerMinute": "$12,000",
+    "description": "Core payment processing — revenue critical, customer-facing",
+    "downstreamCount": 6
+  },
+  "checkout-svc": {
+    "tier": "T1",
+    "sla": "99.99%",
+    "revenueImpactPerMinute": "$8,000",
+    "description": "Checkout flow — directly tied to conversion funnel",
+    "downstreamCount": 4
+  },
+  "order-svc": {
+    "tier": "T1",
+    "sla": "99.95%",
+    "revenueImpactPerMinute": "$5,000",
+    "description": "Order management — post-purchase fulfillment critical path",
+    "downstreamCount": 5
+  },
+  "auth-svc": {
+    "tier": "T1",
+    "sla": "99.99%",
+    "revenueImpactPerMinute": "$15,000",
+    "description": "Authentication gateway — all user sessions depend on this",
+    "downstreamCount": 12
+  },
+  "inventory-svc": {
+    "tier": "T2",
+    "sla": "99.9%",
+    "revenueImpactPerMinute": "$2,000",
+    "description": "Inventory management — availability data for checkout",
+    "downstreamCount": 3
+  },
+  "notification-svc": {
+    "tier": "T2",
+    "sla": "99.9%",
+    "revenueImpactPerMinute": "$500",
+    "description": "Email and push notifications — non-blocking to core flows",
+    "downstreamCount": 1
+  },
+  "analytics-svc": {
+    "tier": "T3",
+    "sla": "99.5%",
+    "revenueImpactPerMinute": "$0",
+    "description": "Internal analytics pipeline — no direct customer impact",
+    "downstreamCount": 0
+  },
+  "web-store": {
+    "tier": "T1",
+    "sla": "99.95%",
+    "revenueImpactPerMinute": "$9,000",
+    "description": "Rails storefront — customer-facing checkout and cart, revenue critical",
+    "downstreamCount": 5
+  },
+  "web-store-mongo": {
+    "tier": "T2",
+    "sla": "99.9%",
+    "revenueImpactPerMinute": "$3,000",
+    "description": "MongoDB-backed store data layer for web-store product catalogue",
+    "downstreamCount": 2
+  },
+  "fraud-prevention-api": {
+    "tier": "T1",
+    "sla": "99.99%",
+    "revenueImpactPerMinute": "$6,000",
+    "description": "Fraud detection gate — blocks on every checkout, failure degrades conversion",
+    "downstreamCount": 3
+  },
+  "order-intake-service": {
+    "tier": "T1",
+    "sla": "99.95%",
+    "revenueImpactPerMinute": "$7,000",
+    "description": "Order ingestion pipeline — processes all new orders from storefront",
+    "downstreamCount": 4
+  },
+  "auth-dotnet": {
+    "tier": "T1",
+    "sla": "99.99%",
+    "revenueImpactPerMinute": "$14,000",
+    "description": ".NET authentication service — all store sessions depend on this",
+    "downstreamCount": 8
+  }
+}

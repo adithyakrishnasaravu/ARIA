@@ -34,65 +34,110 @@ export class AriaOrchestrator {
   ) {}
 
   async *run(alert: AlertPayload): AsyncGenerator<StreamEvent> {
+    // ── Phase 1: Fast Triage — snapshot only (~5s) ───────────────────────────
     yield {
       type: "step",
       step: step(
         "triage",
         "running",
-        "Triage Agent started",
-        "Classifying severity and identifying affected service.",
+        "Fast Triage — snapshot analysis",
+        "Classifying severity from alert metrics, service profile, and operational context. No log evidence yet.",
       ),
     };
 
-    const triage = await this.triageAgent.run(alert);
+    const triageV1 = await this.triageAgent.run(alert);
 
     yield {
       type: "step",
       step: step(
         "triage",
         "completed",
-        "Triage complete",
-        `Severity ${triage.severity.toUpperCase()} for ${triage.affectedService}.`,
+        "Fast Triage complete",
+        `Initial: ${triageV1.severity.toUpperCase()} · ${triageV1.likelyCause.replace(/_/g, " ")} · confidence ${(triageV1.confidence * 100).toFixed(0)}%.${triageV1.dataQualityWarning ? ` ⚠ ${triageV1.dataQualityWarning}` : ""}`,
         {
-          severity: triage.severity,
-          investigationWindowMinutes: triage.investigationWindowMinutes,
+          severity: triageV1.severity,
+          likelyCause: triageV1.likelyCause,
+          confidence: triageV1.confidence,
+          escalateImmediately: triageV1.escalateImmediately,
         },
       ),
     };
 
+    // ── Investigation ────────────────────────────────────────────────────────
     yield {
       type: "step",
       step: step(
         "investigation",
         "running",
         "Investigation Agent started",
-        "Querying Datadog and optional MiniMax analysis for last 30 minutes.",
+        `Pulling Datadog error logs, APM spans, metric trend, and cross-service trace correlation over ${triageV1.investigationWindowMinutes}-minute window.`,
       ),
     };
 
-    const investigation = await this.investigationAgent.run(alert, triage);
+    const investigation = await this.investigationAgent.run(alert, triageV1);
 
+    const totalLogEvents = investigation.datadog.topErrors.reduce((sum, e) => sum + (e.count ?? 1), 0);
+    const crossServiceCount = investigation.datadog.crossServiceLogs?.length ?? 0;
     yield {
       type: "step",
       step: step(
         "investigation",
         "completed",
         "Investigation complete",
-        `Collected ${investigation.datadog.topErrors.reduce((sum, e) => sum + (e.count ?? 1), 0)} high-signal log events across ${investigation.datadog.topErrors.length} error patterns from Datadog.`,
+        `${totalLogEvents} error events across ${investigation.datadog.topErrors.length} patterns · trend ${investigation.datadog.metricTrend?.toUpperCase() ?? "unknown"} · ${crossServiceCount} cross-service log entries correlated.`,
         {
           datadogMode: investigation.datadog.connectorMode,
-          minimaxMode: investigation.minimax?.connectorMode ?? "skipped",
+          metricTrend: investigation.datadog.metricTrend,
+          crossServiceCount,
         },
       ),
     };
 
+    // ── Phase 2: Re-triage with evidence (~2s) ───────────────────────────────
+    yield {
+      type: "step",
+      step: step(
+        "triage",
+        "running",
+        "Re-triage — evidence refined",
+        "Refining severity with Datadog error patterns, metric trend, and cross-service blast radius signal.",
+      ),
+    };
+
+    const triage = await this.triageAgent.refine(alert, triageV1, investigation);
+
+    const severityChanged = triage.severity !== triageV1.severity;
+    yield {
+      type: "step",
+      step: step(
+        "triage",
+        "completed",
+        "Re-triage complete",
+        severityChanged
+          ? `Severity updated ${triageV1.severity.toUpperCase()} → ${triage.severity.toUpperCase()} after evidence review — confidence ${(triage.confidence * 100).toFixed(0)}%.`
+          : `Severity confirmed ${triage.severity.toUpperCase()} — evidence aligns with snapshot. Confidence ${(triage.confidence * 100).toFixed(0)}%.`,
+        {
+          severity: triage.severity,
+          confidence: triage.confidence,
+          severityChanged,
+          requiresHumanConfirmation: triage.requiresHumanConfirmation,
+        },
+      ),
+    };
+
+    // ── Human confirmation gate for sev1 ────────────────────────────────────
+    if (triage.requiresHumanConfirmation) {
+      yield { type: "confirmation_required", triage };
+    }
+
+    // ── RCA ──────────────────────────────────────────────────────────────────
     yield {
       type: "step",
       step: step(
         "rca",
         "running",
-        "RCA + Remediation Agent started",
-        "Traversing Neo4j blast radius, matching MongoDB runbooks, synthesizing ranked hypotheses.",
+        "RCA Agent started",
+        "Traversing Neo4j service graph for blast radius, matching historical runbooks, synthesizing ranked hypotheses.",
       ),
     };
 
@@ -103,11 +148,37 @@ export class AriaOrchestrator {
       step: step(
         "rca",
         "completed",
-        "RCA synthesis complete",
-        `Top hypothesis confidence ${(rca.confidence * 100).toFixed(0)}% with ${rca.blastRadius.length} impacted services.`,
+        "Root cause synthesized",
+        `Top hypothesis: ${rca.hypotheses[0]?.title ?? "unknown"} — confidence ${(rca.confidence * 100).toFixed(0)}% · ${rca.blastRadius.length} impacted services · ${rca.runbooks.length} runbooks matched.`,
         {
           confidence: rca.confidence,
           blastRadiusSize: rca.blastRadius.length,
+          topHypothesis: rca.hypotheses[0]?.title,
+        },
+      ),
+    };
+
+    // ── Remediation ──────────────────────────────────────────────────────────
+    yield {
+      type: "step",
+      step: step(
+        "remediation",
+        "running",
+        "Remediation Agent started",
+        "Prioritizing action plan from ranked hypotheses, runbook history, and blast radius scope.",
+      ),
+    };
+
+    yield {
+      type: "step",
+      step: step(
+        "remediation",
+        "completed",
+        "Remediation plan ready",
+        `${rca.recommendedPlan.length} prioritized actions from ${rca.runbooks.length} matched runbooks — ready for engineer review and execution.`,
+        {
+          planSteps: rca.recommendedPlan.length,
+          runbooksMatched: rca.runbooks.length,
         },
       ),
     };
@@ -119,9 +190,6 @@ export class AriaOrchestrator {
       rca,
     };
 
-    yield {
-      type: "report",
-      report,
-    };
+    yield { type: "report", report };
   }
 }

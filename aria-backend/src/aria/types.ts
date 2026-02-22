@@ -1,5 +1,6 @@
 export type Severity = "sev0" | "sev1" | "sev2" | "sev3";
-export type AgentName = "triage" | "investigation" | "rca";
+export type AgentName = "triage" | "investigation" | "rca" | "remediation";
+export type LikelyCause = "recent_deploy" | "dependency_failure" | "load_spike" | "unknown";
 
 export interface AlertPayload {
   incidentId: string;
@@ -16,6 +17,11 @@ export interface TriageResult {
   affectedService: string;
   urgencyReason: string;
   investigationWindowMinutes: number;
+  confidence: number;
+  escalateImmediately: boolean;
+  likelyCause: LikelyCause;
+  requiresHumanConfirmation: boolean;
+  dataQualityWarning?: string;
 }
 
 export interface LogFinding {
@@ -23,6 +29,21 @@ export interface LogFinding {
   level: string;
   message: string;
   count?: number;
+  stackTrace?: string;
+  errorKind?: string;
+  traceId?: string;
+  host?: string;
+}
+
+export interface MetricPoint {
+  timestamp: string;
+  value: number;
+}
+
+export interface CrossServiceLog {
+  service: string;
+  message: string;
+  timestamp: string;
 }
 
 export interface DatadogEvidence {
@@ -33,6 +54,10 @@ export interface DatadogEvidence {
   metricsSummary: string;
   connectorMode: "live" | "mock";
   notes: string[];
+  errorRateSeries?: MetricPoint[];
+  metricTrend?: "rising" | "peaked" | "falling" | "flapping" | "stable";
+  spanSummary?: string[];
+  crossServiceLogs?: CrossServiceLog[];
 }
 
 export interface MiniMaxEvidence {
@@ -96,4 +121,5 @@ export interface TimelineStep {
 export type StreamEvent =
   | { type: "step"; step: TimelineStep }
   | { type: "report"; report: InvestigationReport }
+  | { type: "confirmation_required"; triage: TriageResult }
   | { type: "error"; message: string };

@@ -7,7 +7,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "seed:neo4j": "tsx src/scripts/seed-neo4j.ts"
+    "seed:neo4j": "tsx src/scripts/seed-neo4j.ts",
+    "seed:runbooks": "tsx src/scripts/seed-runbooks.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.995.0",
@@ -15,6 +16,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "mongodb": "^7.1.0",
     "neo4j-driver": "^6.0.1",
     "zod": "^3.25.76"
   },

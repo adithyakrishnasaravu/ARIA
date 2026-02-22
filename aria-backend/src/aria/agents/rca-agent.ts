@@ -16,35 +16,52 @@ function buildFallbackHypotheses(
   investigation: InvestigationResult,
   runbooks: Runbook[],
 ): Hypothesis[] {
-  const topError = investigation.datadog.topErrors[0]?.message ?? "No top error available";
+  const topError = investigation.datadog.topErrors[0];
+  const topErrorMsg = topError?.message ?? "No error data available";
+  const topErrorKind = topError?.errorKind;
   const primaryRunbook = runbooks[0];
+
+  // Derive hypothesis title from actual error kind when available
+  const primaryTitle = topErrorKind
+    ? `${topErrorKind} in ${alert.service}`
+    : `Elevated errors in ${alert.service}`;
+
+  const primaryEvidence = [
+    `Primary error: ${topErrorMsg}`,
+    `Error rate ${alert.errorRatePct}% and p99 latency ${alert.p99LatencyMs}ms.`,
+  ];
+
+  if (investigation.datadog.metricTrend) {
+    primaryEvidence.push(`Error trend: ${investigation.datadog.metricTrend.toUpperCase()}.`);
+  }
+
+  if (primaryRunbook) {
+    primaryEvidence.push(`Historical runbook match: ${primaryRunbook.title}`);
+  }
 
   return [
     {
-      title: "Database connection pool saturation",
-      probability: 0.88,
-      evidence: [
-        `Primary error pattern: ${topError}`,
-        `Error rate ${alert.errorRatePct}% and p99 latency ${alert.p99LatencyMs}ms are consistent with saturation.`,
-        primaryRunbook ? `Matched runbook: ${primaryRunbook.title}` : "No close historical runbook found.",
-      ],
+      title: primaryTitle,
+      probability: 0.85,
+      evidence: primaryEvidence,
       remediation: primaryRunbook?.steps?.length
         ? primaryRunbook.steps.slice(0, 3)
         : [
-            "Increase DB pool limit.",
-            "Add fast-fail timeout and circuit breaker in payment critical path.",
+            `Investigate recent deploys to ${alert.service} — rollback if correlated.`,
+            "Check downstream service health for dependency failures.",
+            "Scale replicas if load-driven.",
           ],
     },
     {
-      title: "Downstream DB latency amplified by retry storm",
-      probability: 0.58,
+      title: "Recent deployment introduced regression",
+      probability: 0.6,
       evidence: [
-        "Retries and timeouts increase queue depth under contention.",
-        "Trace summary indicates waiting time dominates execution time.",
+        "Error spike pattern is consistent with a bad deploy (sudden onset, constant error kind).",
+        investigation.datadog.tracesSummary,
       ],
       remediation: [
-        "Throttle retries and apply jitter.",
-        "Set upper bound on concurrent in-flight DB operations.",
+        `Review recent ${alert.service} deployment history.`,
+        "Rollback to last known good version if error rate persists > 5 minutes.",
       ],
     },
   ];
@@ -95,9 +112,14 @@ export class RCAAgent {
       summary: alert.summary,
       p99LatencyMs: alert.p99LatencyMs,
       errorRatePct: alert.errorRatePct,
-      topErrors: investigation.datadog.topErrors.map((log) => log.message),
+      topErrors: investigation.datadog.topErrors,
       blastRadius: graph.impactedServices,
       runbooks,
+      tracesSummary: investigation.datadog.tracesSummary,
+      metricTrend: investigation.datadog.metricTrend,
+      spanSummary: investigation.datadog.spanSummary,
+      errorRateSeries: investigation.datadog.errorRateSeries,
+      crossServiceLogs: investigation.datadog.crossServiceLogs,
     });
 
     if (synthesized) {
