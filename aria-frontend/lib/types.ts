@@ -117,3 +117,17 @@ export type StreamEvent =
   | { type: "report"; report: InvestigationReport }
   | { type: "confirmation_required"; triage: TriageResult }
   | { type: "error"; message: string };
+
+export interface StoredIncident {
+  id: string;
+  ticketNumber: number;
+  incidentId: string;
+  service: string;
+  summary: string;
+  severity: string;
+  rcaOneLiner: string;
+  actionOneLiner: string;
+  confidence: number;
+  blastRadius: number;
+  createdAt: string;
+}

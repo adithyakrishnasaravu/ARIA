@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { InvestigationReport, StreamEvent, TimelineStep, TriageResult } from "@/lib/types";
+import { InvestigationReport, StoredIncident, StreamEvent, TimelineStep, TriageResult } from "@/lib/types";
 
 type FormState = {
   incidentId: string;
@@ -225,17 +225,38 @@ function AriaCopilotChat() {
 export function AriaConsole() {
   const investigateEndpoint = "/api/incidents/investigate";
 
+  const [activeTab, setActiveTab] = useState<"investigate" | "issues">("investigate");
   const [form, setForm] = useState<FormState>(defaultForm);
   const [steps, setSteps] = useState<TimelineStep[]>([]);
   const [report, setReport] = useState<InvestigationReport | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingConfirmation, setPendingConfirmation] = useState<TriageResult | null>(null);
+  const [incidents, setIncidents] = useState<StoredIncident[]>([]);
+  const [loadingIncidents, setLoadingIncidents] = useState(false);
 
   const topHypothesis = report?.rca.hypotheses[0] ?? null;
   const serviceCount = useMemo(() => report?.rca.blastRadius.length ?? 0, [report]);
   const completedSteps = useMemo(() => steps.filter((s) => s.status === "completed").length, [steps]);
   const connectorMode = report?.investigation.datadog.connectorMode ?? "pending";
+
+  const loadIncidents = useCallback(async () => {
+    setLoadingIncidents(true);
+    try {
+      const res = await fetch("/api/incidents");
+      if (res.ok) setIncidents(await res.json());
+    } catch {}
+    finally { setLoadingIncidents(false); }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "issues") loadIncidents();
+  }, [activeTab, loadIncidents]);
+
+  // Auto-refresh issues list after a new investigation completes
+  useEffect(() => {
+    if (report) loadIncidents();
+  }, [report, loadIncidents]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -353,6 +374,24 @@ export function AriaConsole() {
             </div>
           </header>
 
+          {/* ── Tabs ── */}
+          <div className="flex gap-1 rounded-full border border-stone-200/70 bg-stone-100/80 p-1 w-fit">
+            {(["investigate", "issues"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                  activeTab === tab
+                    ? "bg-stone-900 text-white"
+                    : "text-stone-500 hover:text-stone-800"
+                }`}
+              >
+                {tab === "issues" ? `Issues${incidents.length > 0 ? ` (${incidents.length})` : ""}` : "Investigate"}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === "investigate" && (
           <div className="grid gap-6 xl:grid-cols-[1.24fr_1fr]">
 
             {/* ── Left: Input + Timeline ── */}
@@ -571,6 +610,76 @@ export function AriaConsole() {
 
             </section>
           </div>
+          )} {/* end investigate tab */}
+
+          {activeTab === "issues" && (
+          <section className="rounded-2xl border border-stone-200/70 bg-stone-50/60 p-5 md:p-6">
+            <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+              <div>
+                <h2 className="text-lg font-semibold text-stone-900">Past Incidents</h2>
+                <p className="mt-0.5 text-xs text-stone-400">All investigated incidents, most recent first.</p>
+              </div>
+              <button
+                onClick={loadIncidents}
+                disabled={loadingIncidents}
+                className="rounded-full border border-stone-300/70 bg-stone-100 px-3 py-1.5 text-[11px] font-medium text-stone-600 hover:bg-stone-200 transition-colors disabled:opacity-50"
+              >
+                {loadingIncidents ? "Refreshing…" : "Refresh"}
+              </button>
+            </div>
+
+            {loadingIncidents && incidents.length === 0 ? (
+              <p className="text-sm text-stone-400">Loading incidents…</p>
+            ) : incidents.length === 0 ? (
+              <div className="rounded-2xl border border-stone-200/70 bg-white/60 p-8 text-center">
+                <p className="text-sm text-stone-500">No incidents stored yet.</p>
+                <p className="mt-1 text-xs text-stone-400">Run an investigation to create the first ticket.</p>
+                <button
+                  onClick={() => setActiveTab("investigate")}
+                  className="mt-4 rounded-full bg-stone-900 px-5 py-2 text-sm font-medium text-white hover:bg-stone-700 transition-colors"
+                >
+                  Go to Investigate →
+                </button>
+              </div>
+            ) : (
+              <ul className="grid gap-3">
+                {incidents.map((inc) => (
+                  <li key={inc.id} className="rounded-2xl border border-stone-200/70 bg-white/60 p-4">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="font-mono text-xs font-semibold text-stone-500">
+                          INC-{String(inc.ticketNumber).padStart(3, "0")}
+                        </span>
+                        <SeverityBadge severity={inc.severity} />
+                        <span className="text-sm font-medium text-stone-800">{inc.service}</span>
+                      </div>
+                      <span className="text-[11px] text-stone-400 shrink-0">
+                        {new Date(inc.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-stone-600">{inc.summary}</p>
+                    <div className="mt-3 grid gap-2 border-t border-stone-200/60 pt-3">
+                      <div className="flex gap-2.5 text-xs">
+                        <span className="text-stone-400 uppercase tracking-[0.12em] shrink-0 w-12">RCA</span>
+                        <span className="text-stone-700 leading-5">{inc.rcaOneLiner}</span>
+                      </div>
+                      <div className="flex gap-2.5 text-xs">
+                        <span className="text-stone-400 uppercase tracking-[0.12em] shrink-0 w-12">Action</span>
+                        <span className="text-stone-700 leading-5">{inc.actionOneLiner}</span>
+                      </div>
+                      <div className="flex gap-3 text-xs text-stone-400 mt-0.5">
+                        <span>Confidence {(inc.confidence * 100).toFixed(0)}%</span>
+                        <span>·</span>
+                        <span>Blast radius {inc.blastRadius} service{inc.blastRadius !== 1 ? "s" : ""}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          )} {/* end issues tab */}
+
         </div>
       </main>
 

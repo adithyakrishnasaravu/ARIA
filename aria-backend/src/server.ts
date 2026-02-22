@@ -17,6 +17,7 @@ import { AriaOrchestrator } from "./aria/orchestrator";
 import { AriaCopilotAgent } from "./aria/agents/copilot-agent";
 import { demoAlert } from "./aria/mock-data";
 import { AlertPayload, InvestigationReport } from "./aria/types";
+import { IncidentStore } from "./aria/connectors/mongodb";
 
 const app = express();
 const port = Number(process.env.ARIA_BACKEND_PORT ?? 4000);
@@ -152,6 +153,7 @@ const alertSchema = z.object({
 });
 
 const orchestrator = new AriaOrchestrator();
+const incidentStore = new IncidentStore();
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "aria-backend" });
@@ -161,7 +163,7 @@ app.get("/", (_req, res) => {
   res.json({
     service: "aria-backend",
     status: "ok",
-    endpoints: ["/health", "/incidents/investigate", "/copilotkit"],
+    endpoints: ["/health", "/incidents", "/incidents/investigate", "/copilotkit"],
   });
 });
 
@@ -220,6 +222,11 @@ app.post("/chat", async (req: Request, res: ExpressResponse) => {
   res.end();
 });
 
+app.get("/incidents", async (_req: Request, res: ExpressResponse) => {
+  const incidents = await incidentStore.list();
+  res.json(incidents);
+});
+
 app.post("/incidents/investigate", async (req: Request, res: ExpressResponse) => {
   const parsed = alertSchema.safeParse(req.body);
 
@@ -243,6 +250,11 @@ app.post("/incidents/investigate", async (req: Request, res: ExpressResponse) =>
   try {
     for await (const event of orchestrator.run(parsed.data)) {
       sendEvent(event);
+      if (event.type === "report") {
+        incidentStore.save(event.report).catch((err) =>
+          console.warn("IncidentStore: background save failed —", err instanceof Error ? err.message : err),
+        );
+      }
     }
   } catch (error) {
     sendEvent({
