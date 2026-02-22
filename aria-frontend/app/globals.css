@@ -1,31 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --bg-0: #020202;
-  --bg-1: #06090f;
-  --bg-2: #0b1018;
-  --surface-0: rgba(12, 16, 26, 0.82);
-  --surface-1: rgba(19, 24, 36, 0.78);
-  --line-0: rgba(122, 142, 172, 0.28);
-  --line-1: rgba(148, 169, 198, 0.16);
-  --ink: #f6f8fc;
-  --muted: #95a2ba;
-  --accent-cyan: #6ad9ff;
-  --accent-blue: #6f8dff;
-  --accent-emerald: #45d7af;
-  --accent-rose: #ff7070;
+  --bg-0: #faf7f2;
+  --bg-1: #f3ede2;
+  --bg-2: #e8e0d0;
+  --surface-0: rgba(255, 252, 246, 0.94);
+  --surface-1: rgba(245, 239, 228, 0.90);
+  --line-0: rgba(80, 55, 25, 0.15);
+  --line-1: rgba(80, 55, 25, 0.08);
+  --ink: #1c1108;
+  --muted: #6b5c40;
+  --accent-cyan: #0891b2;
+  --accent-blue: #4338ca;
+  --accent-emerald: #047857;
+  --accent-rose: #dc2626;
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-plex-mono);
 
-  /* Force CopilotKit palette to dark mode for embedded chat */
-  --copilot-kit-primary-color: #6ad9ff;
-  --copilot-kit-contrast-color: #02040a;
-  --copilot-kit-background-color: #070b13;
-  --copilot-kit-input-background-color: #1a2231;
-  --copilot-kit-secondary-color: #0f1624;
-  --copilot-kit-secondary-contrast-color: #e6edff;
-  --copilot-kit-separator-color: rgba(126, 150, 188, 0.32);
-  --copilot-kit-muted-color: rgba(148, 169, 198, 0.6);
+  /* CopilotKit — light mode */
+  --copilot-kit-primary-color: #0891b2;
+  --copilot-kit-contrast-color: #faf7f2;
+  --copilot-kit-background-color: #f5f0e6;
+  --copilot-kit-input-background-color: #ffffff;
+  --copilot-kit-secondary-color: #ede6d6;
+  --copilot-kit-secondary-contrast-color: #1c1108;
+  --copilot-kit-separator-color: rgba(80, 55, 25, 0.18);
+  --copilot-kit-muted-color: rgba(80, 55, 25, 0.5);
 }
 
 @theme inline {
@@ -48,9 +48,9 @@ body {
   color: var(--ink);
   font-family: var(--font-sans), sans-serif;
   background:
-    radial-gradient(circle at 14% 12%, rgba(106, 217, 255, 0.16), transparent 36%),
-    radial-gradient(circle at 88% 7%, rgba(111, 141, 255, 0.14), transparent 30%),
-    radial-gradient(circle at 50% 108%, rgba(69, 215, 175, 0.1), transparent 36%),
+    radial-gradient(circle at 14% 12%, rgba(251, 191, 36, 0.10), transparent 36%),
+    radial-gradient(circle at 88% 7%, rgba(167, 139, 250, 0.07), transparent 30%),
+    radial-gradient(circle at 50% 108%, rgba(52, 211, 153, 0.06), transparent 36%),
     linear-gradient(155deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
 }
 
@@ -61,60 +61,60 @@ body::before {
   pointer-events: none;
   background-image: linear-gradient(
       to right,
-      rgba(158, 184, 214, 0.05) 1px,
+      rgba(80, 55, 25, 0.06) 1px,
       transparent 1px
     ),
-    linear-gradient(to bottom, rgba(158, 184, 214, 0.04) 1px, transparent 1px);
+    linear-gradient(to bottom, rgba(80, 55, 25, 0.05) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(circle at 50% 22%, black 20%, transparent 78%);
-  opacity: 0.36;
+  opacity: 0.4;
 }
 
 .panel {
   border: 1px solid var(--line-0);
   background: linear-gradient(165deg, var(--surface-0), var(--surface-1));
   box-shadow:
-    0 30px 80px -46px rgba(0, 0, 0, 0.95),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 30px 80px -46px rgba(100, 70, 30, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
 }
 
 .panel-soft {
   border: 1px solid var(--line-1);
-  background: linear-gradient(175deg, rgba(18, 23, 35, 0.72), rgba(10, 13, 22, 0.86));
+  background: linear-gradient(175deg, rgba(255, 251, 243, 0.80), rgba(245, 238, 224, 0.90));
 }
 
 .glow-cyan {
   box-shadow:
-    0 0 0 1px rgba(106, 217, 255, 0.22),
-    0 18px 44px -24px rgba(106, 217, 255, 0.45);
+    0 0 0 1px rgba(8, 145, 178, 0.20),
+    0 18px 44px -24px rgba(8, 145, 178, 0.28);
 }
 
 .field-input {
-  border: 1px solid rgba(148, 169, 198, 0.24);
-  background: rgba(8, 11, 18, 0.84);
+  border: 1px solid rgba(80, 55, 25, 0.22);
+  background: rgba(255, 252, 248, 0.95);
   color: var(--ink);
 }
 
 .field-input:focus {
-  border-color: rgba(106, 217, 255, 0.8);
-  box-shadow: 0 0 0 3px rgba(106, 217, 255, 0.18);
+  border-color: rgba(8, 145, 178, 0.7);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.14);
   outline: none;
 }
 
 .field-file {
-  border: 1px dashed rgba(148, 169, 198, 0.32);
-  background: rgba(8, 11, 18, 0.7);
+  border: 1px dashed rgba(80, 55, 25, 0.28);
+  background: rgba(255, 252, 248, 0.7);
 }
 
 .btn-primary {
-  background-image: linear-gradient(105deg, #6ad9ff, #6f8dff 55%, #45d7af);
-  color: #02040a;
-  box-shadow: 0 16px 42px -20px rgba(106, 217, 255, 0.55);
+  background-image: linear-gradient(105deg, #0891b2, #4338ca 55%, #047857);
+  color: #ffffff;
+  box-shadow: 0 16px 42px -20px rgba(8, 145, 178, 0.38);
 }
 
 .btn-primary:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.08);
 }
 
 .btn-primary:disabled {
@@ -126,7 +126,7 @@ body::before {
   height: 0.55rem;
   border-radius: 9999px;
   background: var(--accent-emerald);
-  box-shadow: 0 0 0 0 rgba(69, 215, 175, 0.45);
+  box-shadow: 0 0 0 0 rgba(4, 120, 87, 0.45);
   animation: pulse-dot 1.7s ease-out infinite;
 }
 
@@ -145,10 +145,10 @@ body::before {
 
 @keyframes pulse-dot {
   70% {
-    box-shadow: 0 0 0 9px rgba(69, 215, 175, 0);
+    box-shadow: 0 0 0 9px rgba(4, 120, 87, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(69, 215, 175, 0);
+    box-shadow: 0 0 0 0 rgba(4, 120, 87, 0);
   }
 }
 
@@ -158,28 +158,41 @@ button {
   font-family: inherit;
 }
 
+button,
+[role="button"],
+a,
+label[for],
+select,
+input[type="file"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
 .copilotKitChat {
   border: 0;
   background: transparent !important;
-  color: var(--copilot-kit-secondary-contrast-color);
+  color: var(--ink);
 }
 
 .copilotKitMessages {
-  background: rgba(5, 7, 13, 0.84) !important;
+  background: rgba(245, 240, 230, 0.84) !important;
   padding: 8px 0 0 !important;
 }
 
 .copilotKitInput {
-  border-top: 1px solid rgba(148, 169, 198, 0.24);
-  background: rgba(8, 11, 18, 0.96) !important;
+  border-top: 1px solid rgba(80, 55, 25, 0.18);
+  background: rgba(255, 252, 248, 0.98) !important;
   border-radius: 20px !important;
   width: calc(100% - 16px) !important;
   min-height: 66px !important;
 }
 
 .copilotKitInputContainer {
-  background: linear-gradient(to top, rgba(8, 11, 18, 0.98), rgba(8, 11, 18, 0.9)) !important;
-  border-top: 1px solid rgba(122, 142, 172, 0.2);
+  background: linear-gradient(to top, rgba(245, 240, 230, 0.98), rgba(245, 240, 230, 0.9)) !important;
+  border-top: 1px solid rgba(80, 55, 25, 0.14);
   padding-bottom: 6px !important;
 }
 
@@ -199,42 +212,42 @@ button {
 }
 
 .copilotKitMessage.copilotKitAssistantMessage {
-  background: linear-gradient(165deg, rgba(19, 27, 42, 0.94), rgba(12, 18, 29, 0.94)) !important;
-  border: 1px solid rgba(122, 142, 172, 0.24);
+  background: linear-gradient(165deg, rgba(255, 252, 246, 0.97), rgba(245, 239, 228, 0.97)) !important;
+  border: 1px solid rgba(80, 55, 25, 0.18);
   padding: 12px 14px !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .copilotKitMessage.copilotKitUserMessage {
-  background: linear-gradient(120deg, rgba(106, 217, 255, 0.24), rgba(111, 141, 255, 0.25)) !important;
-  border: 1px solid rgba(106, 217, 255, 0.35);
-  color: #eef7ff !important;
+  background: linear-gradient(120deg, rgba(8, 145, 178, 0.14), rgba(67, 56, 202, 0.14)) !important;
+  border: 1px solid rgba(8, 145, 178, 0.28);
+  color: #0c4a6e !important;
   padding: 11px 14px !important;
 }
 
 .copilotKitMessage .copilotKitMarkdownElement {
-  color: #e6edff !important;
+  color: #1c1108 !important;
 }
 
 .copilotKitMessage .copilotKitMarkdownElement strong {
-  color: #ffffff !important;
+  color: #0a0804 !important;
 }
 
 .copilotKitInput > textarea {
-  color: #e9efff !important;
+  color: #1c1108 !important;
   font-size: 15px !important;
 }
 
 .copilotKitInput > textarea::placeholder {
-  color: rgba(188, 202, 224, 0.55) !important;
+  color: rgba(80, 55, 25, 0.45) !important;
 }
 
 .copilotKitInputControlButton {
-  color: rgba(160, 188, 226, 0.75) !important;
+  color: rgba(80, 55, 25, 0.6) !important;
 }
 
 .copilotKitInputControlButton:not([disabled]):hover {
-  color: #dff4ff !important;
+  color: #1c1108 !important;
 }
 
 .poweredBy,
@@ -254,9 +267,9 @@ button {
 .aria-copilot-chat {
   border-radius: 18px;
   background:
-    radial-gradient(circle at 15% 0%, rgba(106, 217, 255, 0.08), transparent 30%),
-    radial-gradient(circle at 100% 100%, rgba(111, 141, 255, 0.08), transparent 35%),
-    rgba(5, 7, 13, 0.86) !important;
+    radial-gradient(circle at 15% 0%, rgba(8, 145, 178, 0.06), transparent 30%),
+    radial-gradient(circle at 100% 100%, rgba(67, 56, 202, 0.05), transparent 35%),
+    rgba(250, 247, 242, 0.92) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
