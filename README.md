@@ -1,8 +1,6 @@
 # ARIA — Autonomous Root-cause Intelligence Agent
 
-> Multi-agent AI system that autonomously investigates production incidents, traverses service dependency graphs, and guides on-call engineers to root cause in minutes — not hours.
-
-Built at the **AWS × Datadog GenAI Hackathon 2026** · San Francisco
+> Multi-agent AI system that autonomously investigates production incidents, traverses service dependency graphs, and guides on-call engineers to the root cause in minutes — not hours.
 
 ---
 
